@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="KLK Ventures — Solar Pump Monitoring & Analytics Portal">
+<title>KLK Ventures — Solar Pump Monitoring Portal</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/uploads/klkfav.png">
+<link rel="shortcut icon" href="/uploads/klkfav.png">
+<link rel="apple-touch-icon" href="/uploads/klkfav.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<div class="login-shell" id="loginShell">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="brand-mark">
+        <img src="/uploads/klkfav.png" alt="KLK Ventures" width="36">
+      </div>
+      <div>
+        <h1>KLK Ventures Pvt Ltd</h1>
+        <span>Solar Pump Monitoring &amp; Analytics</span>
+      </div>
+    </div>
+    <form id="loginForm">
+      <label for="username">Username</label>
+      <input type="text" id="username" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" required>
+      <button type="submit">Sign in to Portal</button>
+      <div class="login-err" id="loginErr"></div>
+    </form>
+    <div class="login-foot">&copy; <span id="loginYear"></span> KLK Ventures Pvt Ltd. All rights reserved.</div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="side-brand">
+      <div class="brand-mark sm">
+        <img src="/uploads/klkfav.png" alt="KLK Ventures" width="30">
+      </div>
+      <div class="side-brand-text">
+        <h1>KLK Ventures</h1>
+        <span>Pump Monitoring Portal</span>
+      </div>
+    </div>
+
+    <nav class="side-nav">
+      <a href="#/dashboard" class="nav-link" data-route="dashboard"><span class="ic">&#9635;</span>Dashboard</a>
+      <a href="#/pumps" class="nav-link" data-route="pumps"><span class="ic">&#9776;</span>All Pumps</a>
+      <a href="#/map" class="nav-link" data-route="map"><span class="ic">&#9678;</span>Map View</a>
+      <a href="#/states" class="nav-link" data-route="states"><span class="ic">&#9636;</span>State-wise</a>
+    </nav>
+
+    <div class="side-title">Devices</div>
+    <div id="deviceList" class="side-devices"><div class="empty-rail">Loading device roster&hellip;</div></div>
+
+    <div class="side-foot">
+      <div>KLK Ventures Pvt Ltd</div>
+      <div>&copy; <span id="sideYear"></span> All rights reserved</div>
+    </div>
+  </aside>
+
+  <div class="main-col">
+    <header class="top">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">&#9776;</button>
+      <div class="top-title" id="topTitle">Dashboard</div>
+      <div class="top-actions">
+        <span class="sync-tag" id="syncTag">not synced</span>
+        <span class="who">Signed in as <b id="whoName">&mdash;</b></span>
+        <button class="btn" id="logoutBtn">Log out</button>
+        <button class="btn primary" id="refreshBtn">&#8635; Refresh</button>
+      </div>
+    </header>
+
+    <main id="mainContent">
+      <div id="bannerHost"></div>
+      <div id="pageRoot"></div>
+    </main>
+
+    <footer class="app-footer">
+      &copy; <span id="footYear"></span> <b>KLK Ventures Pvt Ltd</b> &middot; Solar Pump Monitoring &amp; Analytics Portal
+    </footer>
+  </div>
+</div>
+
+<template id="tpl-dashboard">
+  <div class="page page-dashboard">
+    <div class="page-intro">
+      <h2>Fleet Overview</h2>
+      <p>Real-time performance metrics across your solar pump installations</p>
+    </div>
+    <div class="kpi-grid" id="dashKpis"></div>
+    <div class="analytics-row" id="analyticsRow"></div>
+    <div class="grid2">
+      <div class="panel">
+        <h3>Fleet Status <span class="tag">running vs stopped vs fault</span></h3>
+        <div class="chart-wrap"><canvas id="statusDonut"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Pumps by State <span class="tag">device count</span></h3>
+        <div class="chart-wrap"><canvas id="stateBar"></canvas></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <h3>Today&rsquo;s Energy by State <span class="tag">kWh</span></h3>
+        <div class="chart-wrap"><canvas id="energyByState"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Today&rsquo;s Water Output by State <span class="tag">Litres</span></h3>
+        <div class="chart-wrap"><canvas id="waterByState"></canvas></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Fault Log (session) <span class="tag" id="faultTagDash">0 entries</span></h3>
+      <div class="table-scroll">
+        <table class="fault-log">
+          <thead><tr><th>Time</th><th>Device</th><th>State</th><th>Fault Code</th></tr></thead>
+          <tbody id="faultBodyDash"><tr><td colspan="4" style="color:var(--ink-soft);">No faults recorded this session.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-pumps">
+  <div class="page page-pumps">
+    <div class="panel">
+      <div class="table-toolbar">
+        <input type="search" id="pumpSearch" placeholder="Search by Device ID or IMEI&hellip;">
+        <select id="stateFilter"><option value="">All states</option></select>
+        <select id="statusFilter">
+          <option value="">All statuses</option>
+          <option value="run">Running</option>
+          <option value="stop">Stopped</option>
+          <option value="fault">Fault</option>
+        </select>
+        <button class="btn" id="exportCsvBtn">&#8681; Export CSV</button>
+        <span class="foot-note" id="pumpCountTag"></span>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table" id="pumpsTable">
+          <thead>
+            <tr>
+              <th data-key="DID">Device ID</th>
+              <th data-key="STATE">State</th>
+              <th data-key="STATUS">Status</th>
+              <th data-key="MP">Motor Power</th>
+              <th data-key="LPM">Flow</th>
+              <th data-key="TKWH">Today kWh</th>
+              <th data-key="TKL">Today Water (L)</th>
+              <th data-key="TLKWH">Total kWh</th>
+              <th data-key="TMP">Temp</th>
+              <th data-key="SIG">Signal</th>
+              <th data-key="LGT">Last Log</th>
+            </tr>
+          </thead>
+          <tbody id="pumpsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-map">
+  <div class="page page-map">
+    <div class="panel">
+      <h3>All Pumps &mdash; Geo Map <span class="tag" id="mapCountTag">&mdash;</span></h3>
+      <div id="fleetMap" class="map-container"></div>
+      <div class="legend">
+        <span><i class="dot run"></i> Running</span>
+        <span><i class="dot stop"></i> Stopped</span>
+        <span><i class="dot fault"></i> Fault</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-states">
+  <div class="page page-states">
+    <div class="page-intro">
+      <h2>State-wise Breakdown</h2>
+      <p>Performance metrics grouped by installation state</p>
+    </div>
+    <div class="state-cards" id="stateCards"></div>
+  </div>
+</template>
+
+<template id="tpl-device">
+  <div class="page page-device">
+    <div id="deviceHeader" class="device-header">
+      <div>
+        <h2 id="devTitle">&mdash;</h2>
+        <div class="sub" id="devSub">&mdash;</div>
+      </div>
+      <span class="status-pill" id="statusPill">&mdash;</span>
+    </div>
+
+    <div id="kpiGrid" class="kpi-grid"></div>
+
+    <div class="grid2">
+      <div class="panel">
+        <h3>Geo Location <span class="tag" id="geoTag">&mdash;</span></h3>
+        <div id="map" class="map-container"></div>
+      </div>
+      <div class="panel">
+        <h3>Daily Generation &amp; Output <span class="tag" id="chartTag">select a date</span></h3>
+        <div class="history-bar">
+          <input type="date" id="historyDate">
+          <button class="btn primary" id="loadHistoryBtn">Load history</button>
+          <span id="historyStatus" class="foot-note"></span>
+        </div>
+        <div class="chart-wrap chart-wrap-lg" id="historyChartWrap">
+          <canvas id="historyChart"></canvas>
+          <div class="chart-empty" id="historyEmpty">Loading generation data&hellip;</div>
+        </div>
+        <div class="history-summary" id="historySummary"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Fault Log (session) <span class="tag" id="faultTag">0 entries</span></h3>
+      <div class="table-scroll">
+        <table class="fault-log">
+          <thead><tr><th>Time</th><th>Device</th><th>Fault Code</th></tr></thead>
+          <tbody id="faultBody"><tr><td colspan="3" style="color:var(--ink-soft);">No faults recorded this session.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<script src="/vendor/chart.umd.min.js"></script>
+<script src="/app.js" defer></script>
+</body>
+</html>

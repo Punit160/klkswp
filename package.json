@@ -1,0 +1,20 @@
+{
+  "name": "klk-ventures-pump-portal",
+  "version": "2.0.0",
+  "description": "KLK Ventures Pvt Ltd — Solar Pump Monitoring & Analytics Portal with fleet KPIs, charts, geo map, and state-wise breakdowns.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node lib/seedUser.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "chart.js": "^4.4.4",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0",
+    "node-fetch": "^2.7.0"
+  }
+}
