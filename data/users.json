@@ -1,0 +1,14 @@
+[
+  {
+    "id": "mrg4dfuw",
+    "username": "admin",
+    "passwordHash": "$2a$10$9s1dN3UWYmxhWGZakjnfK.jG6cjrNt05cILYNDEAS9JLDrgwTLABC",
+    "displayName": "admin"
+  },
+  {
+    "id": "mrkdhp0b",
+    "username": "testlogin",
+    "passwordHash": "$2a$10$t6l.9vmaxaCF2osrywawauDmAPS1RPRs3i7vplT11l1RMtiCZL5YK",
+    "displayName": "Test User"
+  }
+]
