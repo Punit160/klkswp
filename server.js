@@ -16,13 +16,24 @@ const app = express();
 app.set("trust proxy", 1);
 
 app.use(helmet({
+  // Map tile servers need a referrer; helmet's default "no-referrer" can get tiles blocked.
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "https://cdnjs.cloudflare.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https://*.tile.openstreetmap.org", "https://cdnjs.cloudflare.com"],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "blob:",
+        "https://cdnjs.cloudflare.com",
+        "https://*.basemaps.cartocdn.com", // CARTO street map tiles
+        "https://server.arcgisonline.com", // Esri satellite tiles
+        "https://services.arcgisonline.com",
+        "https://*.tile.openstreetmap.org",
+      ],
       connectSrc: ["'self'"],
     },
   },
